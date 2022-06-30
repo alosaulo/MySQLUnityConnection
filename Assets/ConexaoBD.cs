@@ -154,7 +154,7 @@ public class ConexaoBD : MonoBehaviour
 
             con.Open();
 
-            string sql = $"SELECT u.LOGIN, s.PONTOS from usuario u, score s where u.id = {idUsuario} order by s.PONTOS DESC";
+            string sql = $"SELECT u.LOGIN, s.PONTOS from usuario u, score s where u.id = {idUsuario} && s.USUARIOID = {idUsuario} order by s.PONTOS DESC";
 
             MySqlCommand cmd = new MySqlCommand(sql, con);
             MySqlDataReader rdr = cmd.ExecuteReader();
