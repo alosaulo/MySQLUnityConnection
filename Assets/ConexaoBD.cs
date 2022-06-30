@@ -26,6 +26,20 @@ public class ConexaoBD : MonoBehaviour
     [Header("Painel Logar Usuário")]
     public InputField inputLoginUsuario;
     public InputField inputLoginSenhaUsuario;
+    public GameObject panelLogin;
+
+    [Header("Painel Usuário Logado")]
+    public GameObject panelLogado;
+    public Text txtUsuario;
+    public Text score;
+
+    [Header("Painel Cadastro Score")]
+    public InputField inputScore;
+
+    [Header("Painel Mostrar Scores")]
+    public Text txtMostrarScores;
+
+    public Usuario usuarioLogado;
 
     // Start is called before the first frame update
     void Start()
@@ -37,10 +51,42 @@ public class ConexaoBD : MonoBehaviour
         txtMostrarUsuario.text = ListarUsuarios();
     }
 
+    public void MostarScores() {
+        txtMostrarScores.text = ListarScores();
+    }
+
+    public void MostrarScoresUsuario() {
+        score.text = ListarScores(usuarioLogado.idUsuario);
+    }
+
     public void CadastraUsuario() {
         string login = inputLoginCadastro.text;
         string senha = inputSenhaCadastro.text;
         InserirUsuario(login, senha);
+    }
+
+    public void InserirScore() {
+        int pontos = int.Parse(inputScore.text);
+        int userId = usuarioLogado.idUsuario;
+
+        string strCon = $"Server={Server}; Uid={User}; Database={Database}; Pwd={Password}; Port={Port}";
+        MySqlConnection con = new MySqlConnection(strCon);
+        try
+        {
+            txtMsgServidor.text = "Conectando no banco.";
+            con.Open();
+            string sql = $"INSERT INTO SCORE(PONTOS, USUARIOID) VALUES ('{pontos}','{userId}')";
+            MySqlCommand cmd = new MySqlCommand(sql, con);
+            txtMsgServidor.text = "Realizando query.";
+            cmd.ExecuteNonQuery();
+
+        }
+        catch (System.Exception ex)
+        {
+            txtMsgServidor.text = ex.Message;
+        }
+        con.Close();
+        txtMsgServidor.text = "Tudo ok";
     }
 
     private void InserirUsuario(string login, string senha) 
@@ -63,6 +109,72 @@ public class ConexaoBD : MonoBehaviour
         }
         con.Close();
         txtMsgServidor.text = "Tudo ok";
+    }
+
+    private string ListarScores() {
+        string resultado = "";
+        string strCon = $"Server={Server}; Uid={User}; Database={Database}; Pwd={Password}; Port={Port}";
+        MySqlConnection con = new MySqlConnection(strCon);
+        try
+        {
+            txtMsgServidor.text = "Conectando no banco.";
+
+            con.Open();
+
+            string sql = "SELECT u.LOGIN, s.PONTOS from usuario u, score s where u.id = s.USUARIOID order by s.PONTOS DESC";
+
+            MySqlCommand cmd = new MySqlCommand(sql, con);
+            MySqlDataReader rdr = cmd.ExecuteReader();
+
+            resultado += "LOGIN -- SCORE \n";
+
+            while (rdr.Read())
+            {
+                resultado += (rdr[0] + " -- " + rdr[1] + "\n");
+            }
+
+            rdr.Close();
+        }
+        catch (System.Exception ex)
+        {
+            txtMsgServidor.text = ex.Message;
+        }
+        con.Close();
+        txtMsgServidor.text = "Tudo ok";
+        return resultado;
+    }
+
+    private string ListarScores(int idUsuario) {
+        string resultado = "";
+        string strCon = $"Server={Server}; Uid={User}; Database={Database}; Pwd={Password}; Port={Port}";
+        MySqlConnection con = new MySqlConnection(strCon);
+        try
+        {
+            txtMsgServidor.text = "Conectando no banco.";
+
+            con.Open();
+
+            string sql = $"SELECT u.LOGIN, s.PONTOS from usuario u, score s where u.id = {idUsuario} order by s.PONTOS DESC";
+
+            MySqlCommand cmd = new MySqlCommand(sql, con);
+            MySqlDataReader rdr = cmd.ExecuteReader();
+
+            resultado += "LOGIN -- SCORE \n";
+
+            while (rdr.Read())
+            {
+                resultado += (rdr[0] + " -- " + rdr[1] + "\n");
+            }
+
+            rdr.Close();
+        }
+        catch (System.Exception ex)
+        {
+            txtMsgServidor.text = ex.Message;
+        }
+        con.Close();
+        txtMsgServidor.text = "Tudo ok";
+        return resultado;
     }
 
     private string ListarUsuarios()
@@ -104,6 +216,10 @@ public class ConexaoBD : MonoBehaviour
         if (conexao == true)
         {
             txtMsgServidor.text = "Usuário logado";
+            panelLogado.SetActive(true);
+            panelLogin.SetActive(false);
+            txtUsuario.text = usuarioLogado.nomeUsuario;
+            MostrarScoresUsuario();
         }
     }
 
@@ -127,6 +243,9 @@ public class ConexaoBD : MonoBehaviour
             while (rdr.Read())
             {
                 rowcount++;
+                usuarioLogado.idUsuario = (int)rdr[0];
+                usuarioLogado.nomeUsuario = rdr[1].ToString();
+                usuarioLogado.senha = rdr[2].ToString();
             }
 
             if (rowcount > 0) {
