@@ -56,7 +56,7 @@ public class ConexaoBD : MonoBehaviour
     }
 
     public void MostrarScoresUsuario() {
-        score.text = ListarScores(usuarioLogado.idUsuario);
+        score.text = ListarScores(usuarioLogado.id);
     }
 
     public void CadastraUsuario() {
@@ -67,7 +67,7 @@ public class ConexaoBD : MonoBehaviour
 
     public void InserirScore() {
         int pontos = int.Parse(inputScore.text);
-        int userId = usuarioLogado.idUsuario;
+        int userId = usuarioLogado.id;
 
         string strCon = $"Server={Server}; Uid={User}; Database={Database}; Pwd={Password}; Port={Port}";
         MySqlConnection con = new MySqlConnection(strCon);
@@ -218,7 +218,7 @@ public class ConexaoBD : MonoBehaviour
             txtMsgServidor.text = "Usuário logado";
             panelLogado.SetActive(true);
             panelLogin.SetActive(false);
-            txtUsuario.text = usuarioLogado.nomeUsuario;
+            txtUsuario.text = usuarioLogado.NOME;
             MostrarScoresUsuario();
         }
     }
@@ -243,9 +243,9 @@ public class ConexaoBD : MonoBehaviour
             while (rdr.Read())
             {
                 rowcount++;
-                usuarioLogado.idUsuario = (int)rdr[0];
-                usuarioLogado.nomeUsuario = rdr[1].ToString();
-                usuarioLogado.senha = rdr[2].ToString();
+                usuarioLogado.id = (int)rdr[0];
+                usuarioLogado.NOME = rdr[1].ToString();
+                usuarioLogado.SENHA = rdr[2].ToString();
             }
 
             if (rowcount > 0) {
